@@ -19,12 +19,6 @@ class TelegramEventListener(ABC):
         Установка обработчиков событий.
         """
         self._client.add_event_handler(self.all_events_handler, event=events.Raw)
-        # self._client.add_event_handler(self.all_events_handler, event=events.NewMessage)
-        # self._client.add_event_handler(self.all_events_handler, event=events.MessageEdited)
-        # self._client.add_event_handler(self.all_events_handler, event=events.MessageDeleted)
-        # self._client.add_event_handler(self.all_events_handler, event=events.Album)
-        # self._client.add_event_handler(self.all_events_handler, event=events.ChatAction)
-        # self._client.add_event_handler(self.all_events_handler, event=events.UserUpdate)
 
     @abstractmethod
     async def all_events_handler(event):
