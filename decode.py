@@ -15,8 +15,5 @@ if __name__ == "__main__":
     with open(file_in, "rb") as f:
         with open(file_out, "wb") as g:
             for line in f:
-                try:
-                    g.write(cipher.decrypt(line))
-                    g.write(b'\n')
-                except:
-                    pass
+                g.write(cipher.decrypt(line))
+                g.write(b'\n')

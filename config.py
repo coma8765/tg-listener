@@ -73,6 +73,16 @@ class AppConfig:
     def journal_chat_id(self) -> str:
         return int(self._env_manager.get_encrypted_env("ENCRYPTED_JOURNAL_CHAT_ID"))
 
+    def __str__(self):
+        return (
+            f"AppConfig("
+            f"tg_api_id={self.tg_api_id}, "
+            f"tg_api_hash={'*' * len(self.tg_api_hash) if self.tg_api_hash else None}, "
+            f"journal_key={'*' * len(self.journal_key) if self.journal_key else None}, "
+            f"fwd_chat_id={self.fwd_chat_id}, "
+            f"journal_chat_id={self.journal_chat_id})"
+        )
+
 
 # Пример использования:
 if __name__ == "__main__":
