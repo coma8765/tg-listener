@@ -112,9 +112,14 @@ class EventHandlers:
             if isinstance(preview_msgs_with_links[0][0].peer_id, types.PeerUser):
                 user = await self._entity_store.get_user(preview_msgs_with_links[0][0].peer_id.user_id)
                 user_text = f"{user.first_name} {user.last_name} (@{user.username}|{user.id})"
-            else:            
+            elif isinstance(preview_msgs_with_links[0][0].peer_id, types.PeerChat):            
                 user = await self._entity_store.get_chat(types.PeerChat(preview_msgs_with_links[0][0].peer_id.chat_id))
                 user_text = f"\"{user.title}\" ({user.id})"
+            elif isinstance(preview_msgs_with_links[0][0].peer_id, types.PeerChannel):            
+                user = await self._entity_store.get_chat(types.PeerChat(preview_msgs_with_links[0][0].peer_id.channel_id))
+                user_text = f"#{user.title} ({user.id})"
+            else:
+                user_text = None                
         else:
             user_text = None
 
