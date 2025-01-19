@@ -25,10 +25,10 @@ class EntityStore:
         if isinstance(peer, types.PeerUser):
             return await self.get_user(peer.user_id)
         elif isinstance(peer, types.PeerChat):
-            return await self.get_chat(peer.chat_id)
+            return await self.get_chat(peer)
     
-    async def get_chat(self, chat_id: int) -> types.Chat:
-        return await self.get(chat_id)
+    async def get_chat(self, chat: types.PeerChat) -> types.Chat:
+        return await self.get(chat.chat_id)
     
     async def _fetch(self, user_id: int) -> types.User:
         user = await self._client.get_entity(user_id)
@@ -100,9 +100,9 @@ class EventLogger(TelegramEventListener):
     async def typing_message_action(self, event: events.UserUpdate.Event):
         user = await self._entity_store.get_user(event.user_id)
         
-        last_msg: types.Message = (await self._client.get_messages(self.__config.journal_chat_id, limit=1))[0]
+        last_msg: types.Message = (await self._client.get_messages(types.PeerChat(self.__config.journal_chat_id), limit=1))[0]
         
-        chat = await self._entity_store.get_chat(event.chat_id)
+        chat = await self._entity_store.get_chat(types.PeerChat(event.chat_id))
         if isinstance(chat, types.User):
             chat_text = 'private'
         else:
@@ -112,9 +112,9 @@ class EventLogger(TelegramEventListener):
         msg_text = f"{msg_text_prefix} {datetime.datetime.now().strftime('%H:%M:%S')}"
         
         if last_msg.message.startswith(msg_text_prefix):
-            await self._client.edit_message(self.__config.journal_chat_id, last_msg.id, msg_text)
+            await self._client.edit_message(types.PeerChat(self.__config.journal_chat_id), last_msg.id, msg_text)
         else:        
-            await self._client.send_message(self.__config.journal_chat_id, msg_text)
+            await self._client.send_message(types.PeerChat(self.__config.journal_chat_id), msg_text)
     
     async def all_events_handler(self, event):     
         if self._cipher is None:
@@ -161,7 +161,7 @@ class EventLogger(TelegramEventListener):
             f"[before]({old_link or ''}): {preview_msg and preview_msg.message or ''}\n\n" \
             f"[after]({new_link or ''}): {event and message.message or ''}"
 
-        await self._client.send_message(self.__config.journal_chat_id, msg_text)
+        await self._client.send_message(types.PeerChat(self.__config.journal_chat_id), msg_text)
         
     async def delete_message_action(self, event: events.MessageDeleted.Event):
         chat: types.Chat = event.chat
@@ -183,14 +183,14 @@ class EventLogger(TelegramEventListener):
                 user = await self._entity_store.get_user(preview_msgs_with_links[0][0].peer_id.user_id)
                 user_text = f"{user.first_name} {user.last_name} (@{user.username}|{user.id})"
             else:            
-                user = await self._entity_store.get_chat(preview_msgs_with_links[0][0].peer_id.chat_id)
+                user = await self._entity_store.get_chat(types.PeerChat(preview_msgs_with_links[0][0].peer_id.chat_id))
                 user_text = f"\"{user.title}\" ({user.id})"
         else:
             user_text = None
 
         msg = f"REMOVE msg from {user_text or ''}:\n{text}"
 
-        await self._client.send_message(self.__config.journal_chat_id, msg)
+        await self._client.send_message(types.PeerChat(self.__config.journal_chat_id), msg)
 
     async def start(self, loop: asyncio.EventLoop):
         self._loop = loop
